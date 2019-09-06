@@ -2607,6 +2607,12 @@ sub load_publiccloud_tests {
     if (get_var('PUBLIC_CLOUD_PREPARE_TOOLS')) {
         loadtest "publiccloud/prepare_tools";
     }
+    elsif (get_var('PUBLIC_CLOUD_QAM')) {
+        loadtest "publiccloud/qam_init";
+        loadtest "publiccloud/qam_test";
+        loadtest "console/rpm";
+        loadtest "publiccloud/qam_end";
+    }
     elsif (get_var('PUBLIC_CLOUD_IPA_TESTS')) {
         loadtest "publiccloud/ipa";
     }

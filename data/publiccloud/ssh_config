@@ -1,0 +1,7 @@
+ControlMaster auto
+ControlPath /tmp/ssh_%r_%h_%p
+StrictHostKeyChecking no
+HostKeyAlgorithms ssh-rsa
+ControlPersist 86400
+User root
+
