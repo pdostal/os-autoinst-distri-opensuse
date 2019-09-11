@@ -17,7 +17,7 @@ use publiccloud::basetest;
 use utils;
 
 sub run {
-    my ($self) = @_;
+    my ($self, $args) = @_;
     select_console 'root-console';
     type_string("exit\n");
     $serialdev = get_var('serialdev_');
@@ -25,8 +25,9 @@ sub run {
     bmwqemu::save_vars();
     assert_script_run("ps --no-headers ao 'pid:1,cmd:1' | grep '[s]sh'");
     assert_script_run("kill -9 `ps --no-headers ao 'pid:1,cmd:1' | grep '[s]sh -t -R' | cut -d' ' -f1`");
-    select_console 'user-console';
-    publiccloud::basetest::_cleanup();
+
+    $self->select_serial_terminal();
+    $args->{my_provider}->cleanup();
 }
 
 1;

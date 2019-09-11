@@ -2608,10 +2608,12 @@ sub load_publiccloud_tests {
         loadtest "publiccloud/prepare_tools";
     }
     elsif (get_var('PUBLIC_CLOUD_QAM')) {
-        loadtest "publiccloud/qam_init";
-        loadtest "publiccloud/qam_test";
-        loadtest "console/rpm";
-        loadtest "publiccloud/qam_end";
+        # could be placed in a separate module.
+        my $args = OpenQA::Test::RunArgs->new();
+        loadtest("publiccloud/qam_init", run_args => $args);
+        loadtest("publiccloud/qam_test", run_args => $args);
+        loadtest("console/rpm",          run_args => $args);
+        loadtest("publiccloud/qam_end",  run_args => $args);
     }
     elsif (get_var('PUBLIC_CLOUD_IPA_TESTS')) {
         loadtest "publiccloud/ipa";

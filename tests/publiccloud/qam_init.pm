@@ -11,20 +11,22 @@
 #
 # Maintainer: Clemens Famulla-Conrad <cfamullaconrad@suse.de>
 
+use Mojo::Base 'publiccloud::basetest';
 use testapi;
-use base 'opensusebasetest';
-use publiccloud::basetest;
 use utils;
 
 sub run {
-    my ($self) = @_;
-    select_console 'user-console';
-    become_root;
+    my ($self, $args) = @_;
 
-    my $provider = publiccloud::basetest::provider_factory();
+    $self->select_serial_terminal();
+    my $provider = $self->provider_factory();
     my $instance = $provider->create_instance(check_connectivity => 0);
     $instance->check_ssh_port(timeout => 300);
+    $args->{my_provider} = $provider;
+    $args->{my_instance} = $instance;
 
+    select_console 'user-console';
+    become_root;
     # configure ssh client, fetch the instance ssh public key
     assert_script_run('curl ' . data_url('publiccloud/ssh_config') . ' -o ~/.ssh/config');
     assert_script_run "ssh-keyscan " . $instance->public_ip . " > ~/.ssh/known_hosts";
@@ -46,9 +48,9 @@ sub run {
     sleep 10;
     save_screenshot;
     send_key('ret');
-    
+
     select_console 'root-console';
-    assert_script_run  "ps aux | grep -i [s]sh";
+    assert_script_run "ps aux | grep -i [s]sh";
     type_string("ssh " . $instance->public_ip . "\n");
     wait_serial("ssh_serial_ready", 10);
     set_var('serialdev_', $serialdev);
@@ -57,6 +59,15 @@ sub run {
     bmwqemu::save_vars();
     $self->set_standard_prompt('root');
 }
+
+sub test_flags {
+    return {
+        fatal                    => 1,
+        publiccloud_multi_module => 1
+    };
+}
+
+
 
 1;
 
