@@ -47,8 +47,11 @@ sub run {
 
     if ($self->firewall() eq 'firewalld') {
         # on publiccloud we need to install firewalld first
-        install_and_start_firewalld() if (is_publiccloud || is_jeos);
-        check_docker_firewall();
+        zypper_call('install firewalld') if (is_publiccloud || is_jeos);
+        systemctl('restart firewalld');
+        systemctl('restart docker');
+        $stop_firewall = 1;
+        check_containers_firewall($engine);
     }
 
     # Run basic runtime tests
@@ -70,13 +73,6 @@ sub post_run_hook {
     my $self = shift;
     cleanup();
     $self->SUPER::post_run_hook;
-}
-
-sub install_and_start_firewalld() {
-    zypper_call('install firewalld');
-    systemctl('start firewalld');
-    systemctl('restart docker');
-    $stop_firewall = 1;
 }
 
 # must ensure firewalld is stopped, if it is only enabled in this test (e.g. publiccloud test runs)
