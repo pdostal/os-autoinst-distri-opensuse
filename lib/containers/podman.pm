@@ -14,6 +14,7 @@ use containers::common qw(install_podman_when_needed);
 use utils qw(file_content_replace);
 use version_utils qw(get_os_release);
 has runtime => "podman";
+use containers::operations::podman;
 
 sub init {
     my ($running_version, $sp, $host_distri) = get_os_release;

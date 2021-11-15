@@ -14,7 +14,7 @@ use containers::common qw(install_docker_when_needed);
 use utils qw(systemctl file_content_replace);
 use version_utils qw(get_os_release);
 has runtime => 'docker';
-
+use containers::operations::docker;
 sub init {
     my ($running_version, $sp, $host_distri) = get_os_release;
     install_docker_when_needed($host_distri);
