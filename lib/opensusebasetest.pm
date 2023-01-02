@@ -997,6 +997,9 @@ sub post_fail_hook {
 
     return if (get_var('NOLOGS'));
 
+    # Remember current console
+    my $prev_console = current_console();
+
     # Upload basic health check log
     select_serial_terminal();
     export_healthcheck_basic;
@@ -1037,6 +1040,9 @@ sub post_fail_hook {
     }
 
     export_logs;
+
+    # Restore previous console
+    select_console($prev_console);
 
     if ((is_public_cloud() || is_openstack()) && $self->{run_args}->{my_provider}) {
         select_host_console(force => 1);
