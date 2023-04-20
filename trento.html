@@ -21,7 +21,6 @@
         <ul>
           <li><a href="#get_trento_deployment">get_trento_deployment</a></li>
           <li><a href="#get_resource_group">get_resource_group</a></li>
-          <li><a href="#get_qesap_resource_group">get_qesap_resource_group</a></li>
           <li><a href="#cluster_config">cluster_config</a></li>
           <li><a href="#deploy_vm">deploy_vm</a></li>
           <li><a href="#trento_acr_azure">trento_acr_azure</a></li>
@@ -32,7 +31,6 @@
           <li><a href="#get_acr_name">get_acr_name</a></li>
           <li><a href="#get_trento_ip">get_trento_ip</a></li>
           <li><a href="#get_trento_private_ip">get_trento_private_ip</a></li>
-          <li><a href="#get_vnet">get_vnet</a></li>
           <li><a href="#get_trento_password">get_trento_password</a></li>
           <li><a href="#az_delete_group">az_delete_group</a></li>
           <li><a href="#az_vm_ssh_cmd">az_vm_ssh_cmd</a></li>
@@ -40,6 +38,7 @@
           <li><a href="#k8s_logs">k8s_logs</a></li>
           <li><a href="#k8s_test">k8s_test</a></li>
           <li><a href="#trento_support">trento_support</a></li>
+          <li><a href="#trento_collect_scenarios">trento_collect_scenarios</a></li>
           <li><a href="#trento_api_key">trento_api_key</a></li>
           <li><a href="#cluster_print_cluster_status">cluster_print_cluster_status</a></li>
           <li><a href="#cluster_hdbadm">cluster_hdbadm</a></li>
@@ -49,7 +48,6 @@
           <li><a href="#cypress_configs">cypress_configs</a></li>
           <li><a href="#cypress_install_container">cypress_install_container</a></li>
           <li><a href="#cypress_log_upload">cypress_log_upload</a></li>
-          <li><a href="#cypress_version">cypress_version</a></li>
           <li><a href="#cypress_exec">cypress_exec</a></li>
           <li><a href="#cypress_test_exec">cypress_test_exec</a></li>
         </ul>
@@ -102,10 +100,6 @@
 <h3 id="get_resource_group">get_resource_group</h3>
 
 <p>Return a string to be used as cloud resource group. It contains the JobId</p>
-
-<h3 id="get_qesap_resource_group">get_qesap_resource_group</h3>
-
-<p>Query and return the resource group used by the qe-sap-deployment</p>
 
 <h3 id="cluster_config">cluster_config</h3>
 
@@ -179,18 +173,6 @@
 
 <p>Return the private IP of the Trento instance, needed by the agent configuration</p>
 
-<h3 id="get_vnet">get_vnet</h3>
-
-<p>Return the output of az network vnet list =over 1</p>
-
-<dl>
-
-<dt id="RESOURCE_GROUP---resource-group-name-to-query"><b>RESOURCE_GROUP</b> - resource group name to query</dt>
-<dd>
-
-</dd>
-</dl>
-
 <h3 id="get_trento_password">get_trento_password</h3>
 
 <p>Return the password for the Trento WebUI</p>
@@ -259,9 +241,21 @@
 
 <p>Call trento-support.sh and dump_scenario_from_k8.sh and upload the logs</p>
 
+<h3 id="trento_collect_scenarios">trento_collect_scenarios</h3>
+
+<p>Call dump_scenario_from_k8.sh and upload the logs</p>
+
 <h3 id="trento_api_key">trento_api_key</h3>
 
 <p>Get the api-key from the Trento installation</p>
+
+<dl>
+
+<dt id="BASEDIR---Folder-of-the-trento-installer-repo-clone"><b>BASEDIR</b> - Folder of the trento installer repo clone</dt>
+<dd>
+
+</dd>
+</dl>
 
 <h3 id="cluster_print_cluster_status">cluster_print_cluster_status</h3>
 
@@ -299,14 +293,6 @@
 
 <p>Prepare whatever is needed to run cypress tests using container</p>
 
-<dl>
-
-<dt id="CYPRESS_VER---String-used-as-tag-for-the-cypress-included-image"><b>CYPRESS_VER</b> - String used as tag for the cypress/included image.</dt>
-<dd>
-
-</dd>
-</dl>
-
 <h3 id="cypress_log_upload">cypress_log_upload</h3>
 
 <p>Upload to openQA the relevant logs</p>
@@ -318,10 +304,6 @@
 
 </dd>
 </dl>
-
-<h3 id="cypress_version">cypress_version</h3>
-
-<p>Return the cypress.io version to use. It could be the default one or one fixed by the user using TRENTO_CYPRESS_VERSION</p>
 
 <h3 id="cypress_exec">cypress_exec</h3>
 
@@ -377,19 +359,13 @@
 
 <dl>
 
-<dt id="Around-line-99">Around line 99:</dt>
+<dt id="Around-line-103">Around line 103:</dt>
 <dd>
 
 <p>Unknown directive: =hean3</p>
 
 </dd>
-<dt id="Around-line-246">Around line 246:</dt>
-<dd>
-
-<p>&#39;=item&#39; outside of any &#39;=over&#39;</p>
-
-</dd>
-<dt id="Around-line-514">Around line 514:</dt>
+<dt id="Around-line-237">Around line 237:</dt>
 <dd>
 
 <p>&#39;=item&#39; outside of any &#39;=over&#39;</p>
