@@ -187,10 +187,11 @@ sub img_proof {
 }
 
 sub cleanup {
-    my ($self, $args) = @_;
+    my ($self) = @_;
     #if for some reason the instance is not created everything below does not make sense to execute
-    return unless ($args->{my_instance} && $args->{my_instance}->{instance_id});
-    my $instance_id = $args->{my_instance}->{instance_id};
+    #return unless ($self->{instance} && $self->{instance}->{instance_id});
+    #my $instance_id = $self->{instance}->{instance_id};
+    my $instance_id = "";
 
     select_host_console(force => 1);
 
