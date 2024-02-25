@@ -76,6 +76,10 @@ variable "ipv6_address_count" {
   default = 0
 }
 
+variable "ipv6_address" {
+  default = ""
+}
+
 resource "random_id" "service" {
   count = var.instance_count
   keepers = {
@@ -89,15 +93,64 @@ resource "aws_key_pair" "openqa-keypair" {
   public_key = file("/root/.ssh/id_rsa.pub")
 }
 
+resource "aws_subnet" "ipv6" {
+  count                  = var.instance_count
+
+  availability_zone      = var.availability_zone
+  vpc_id                  = "vpc-0d3affe22a06649a7" 
+  ipv6_cidr_block                 = "2a05:d018:1c5f:4b66::/64"
+  ipv6_native = true
+  assign_ipv6_address_on_creation = true
+  enable_resource_name_dns_aaaa_record_on_launch = true
+
+  tags = merge({
+    openqa_created_by   = var.name
+    openqa_created_date = timestamp()
+  }, var.tags)
+}
+
+resource "aws_route_table" "example" {
+  count                  = var.instance_count
+  vpc_id                  = "vpc-0d3affe22a06649a7" 
+
+  route {
+    ipv6_cidr_block = element(aws_subnet.ipv6.*.ipv6_cidr_block, count.index)
+    network_interface_id = element(aws_network_interface.test.*.id, count.index)
+  }
+
+  route {
+    ipv6_cidr_block = "::/0"
+    gateway_id      = "igw-025c387f2dde31516"
+  }
+}
+
+resource "aws_route_table_association" "route-table-association" {
+  count                  = var.instance_count
+
+  subnet_id      = element(aws_subnet.ipv6.*.id, count.index)
+  route_table_id = element(aws_route_table.example.*.id, count.index)
+}
+
+resource "aws_network_interface" "test" {
+  count                  = var.instance_count
+
+  subnet_id              = var.subnet_id
+  ipv6_addresses         = (var.ipv6_address_count == "1") ? ["${var.ipv6_address}1"] : []
+  security_groups = [var.vpc_security_group_ids]
+  source_dest_check = false
+}
+
 resource "aws_instance" "openqa" {
   count                  = var.instance_count
   ami                    = var.image_id
   instance_type          = var.type
   key_name               = aws_key_pair.openqa-keypair.key_name
-  vpc_security_group_ids = [var.vpc_security_group_ids]
   availability_zone      = var.availability_zone
-  subnet_id              = var.subnet_id
-  ipv6_address_count     = var.ipv6_address_count
+
+  network_interface {
+    network_interface_id = element(aws_network_interface.test.*.id, count.index)
+    device_index         = 0
+  }
 
   tags = merge({
     openqa_created_by   = var.name
@@ -143,6 +196,9 @@ resource "aws_ebs_volume" "ssd_disk" {
 
 output "public_ip" {
   value = aws_instance.openqa.*.public_ip
+}
+output "public_ipv6" {
+  value = aws_instance.openqa.*.ipv6_addresses
 }
 
 output "vm_name" {

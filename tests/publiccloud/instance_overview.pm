@@ -47,6 +47,26 @@ sub run {
     zypper_call("ref");
     my $register = (is_sle_micro) ? "transactional-update register --status-text" : "SUSEConnect --status-text";
     assert_script_run($register, 300);
+    script_run('sysctl -w net.ipv6.conf.all.forwarding=1');
+    script_run('sysctl -w net.ipv6.conf.default.forwarding=1');
+    zypper_call("in podman netavark curl");
+    script_run('podman info |grep -i networkbackend');
+    script_run('podman network create --ipv6 --gateway 2a05:d018:1c5f:4b66::1 --subnet 2a05:d018:1c5f:4b66::/64 --gateway 10.90.0.1 --subnet 10.90.0.0/16 podman1');
+    script_run('podman network inspect podman1');
+    assert_script_run("ip $ip_color a s");
+    assert_script_run("ip $ip_color r s");
+    assert_script_run("ip $ip_color -6 r s");
+    script_run('podman run --network podman1 --name apache -d --ip6 2a05:d018:1c5f:4b66::2 -p 8080:80 docker.io/fedora/apache');
+    assert_script_run("ip $ip_color a s");
+    assert_script_run("ip $ip_color r s");
+    assert_script_run("ip $ip_color -6 r s");
+    script_run('sleep 15');
+    script_run('podman ps');
+    script_run('podman inspect apache');
+    script_run("curl http://[2a05:d018:1c5f:4b66::2]:80/");
+    script_run('podman exec apache ip a s');
+    script_run('podman exec apache ip -6 r s');
+    sleep 6000;
 
     zypper_call("lr -d");
 

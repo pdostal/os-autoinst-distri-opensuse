@@ -477,11 +477,16 @@ sub terraform_apply {
             my $vpc_security_group_ids = script_output("aws ec2 describe-security-groups --region '" . $self->provider_client->region . "' --filters 'Name=group-name,Values=tf-sg' --query 'SecurityGroups[0].GroupId' --output text");
             my $availability_zone = script_output("aws ec2 describe-instance-type-offerings --location-type availability-zone  --filters Name=instance-type,Values=" . $instance_type . "  --region '" . $self->provider_client->region . "' --query 'InstanceTypeOfferings[0].Location' --output 'text'");
             my $subnet_id = script_output("aws ec2 describe-subnets --region '" . $self->provider_client->region . "' --filters 'Name=tag:Name,Values=tf-subnet' 'Name=availabilityZone,Values=" . $availability_zone . "' --query 'Subnets[0].SubnetId' --output text");
+            # The PUBLIC_CLOUD_EC2_IPV6_ADDRESS_COUNT can be either 0 or 1
             my $ipv6_address_count = get_var('PUBLIC_CLOUD_EC2_IPV6_ADDRESS_COUNT', 1);
+            my $ipv6_test_id = sprintf("%X", get_current_job_id());
+            $ipv6_address_count =~ s/(....)/$1:/sg;
+            my $ipv6_address = ($ipv6_address_count) ? script_output("aws ec2 describe-subnets --subnet-ids '" . $subnet_id . "' --region '" . $self->provider_client->region . "' --query 'Subnets[*].Ipv6CidrBlockAssociationSet[*].Ipv6CidrBlock' --output 'text' | cut -d: -f1,2,3,4") . ":" . $ipv6_test_id . "::": undef;
             $cmd .= "-var 'vpc_security_group_ids=$vpc_security_group_ids' ";
             $cmd .= "-var 'availability_zone=$availability_zone' ";
             $cmd .= "-var 'subnet_id=$subnet_id' ";
             $cmd .= "-var 'ipv6_address_count=$ipv6_address_count' " if ($ipv6_address_count);
+            $cmd .= "-var 'ipv6_address=$ipv6_address' " if ($ipv6_address_count);
         } elsif (is_azure) {
             my $subnet_id = script_output("az network vnet subnet list -g 'tf-" . $self->provider_client->region . "-rg' --vnet-name 'tf-network' --query '[0].id' --output 'tsv'");
             $cmd .= "-var 'subnet_id=$subnet_id' " if ($subnet_id);
