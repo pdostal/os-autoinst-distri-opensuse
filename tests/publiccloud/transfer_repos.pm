@@ -57,6 +57,7 @@ sub run {
         # Create list of directories for rsync
         foreach my $repo (@repos) {
             assert_script_run("echo $repo | tee -a /tmp/transfer_repos.txt");
+            script_run("ls -la ~/repos/$repo/");
         }
         # VM repos.dir support preparation
         $args->{my_instance}->ssh_assert_script_run("sudo mkdir $repodir;sudo chmod 777 $repodir");
@@ -67,11 +68,11 @@ sub run {
         # * The --dirs (-d) option is implied whn --files-from is specified.
         # * The --archive (-a) option's behavior does not imply --recursive (-r) when --files-from is specified.
         # --recursive (-r), --update (-u), --archive (-a), --human-readable (-h), --rsh (-e)
-        script_retry("rsync --timeout=$timeout -ruahd -e ssh --files-from /tmp/transfer_repos.txt ~/repos/./ '$remote:$repodir'", timeout => $timeout + 10, retry => 3, delay => 120);
+        script_retry("rsync --timeout=$timeout -ruahdv --stats -e ssh --files-from /tmp/transfer_repos.txt ~/repos/./ '$remote:$repodir'", timeout => $timeout + 10, retry => 3, delay => 120);
 
-        my $total_size = $args->{my_instance}->ssh_script_output(cmd => 'du -hs $repodir');
+        my $total_size = $args->{my_instance}->ssh_script_output(cmd => "du -hs $repodir");
         record_info("Repo size", "Total repositories size: $total_size");
-        $args->{my_instance}->ssh_assert_script_run("find ./ -name '*.rpm' -exec du -h '{}' + | sort -h > /tmp/rpm_list.txt", timeout => 60);
+        $args->{my_instance}->ssh_assert_script_run("find $repodir -name '*.rpm' -exec du -h '{}' + | sort -h > /tmp/rpm_list.txt", timeout => 60);
         $args->{my_instance}->upload_log('/tmp/rpm_list.txt');
 
         $args->{my_instance}->ssh_assert_script_run("sudo find $repodir -name *.repo -exec sed -i 's,http://,$repodir,g' '{}' \\;");
