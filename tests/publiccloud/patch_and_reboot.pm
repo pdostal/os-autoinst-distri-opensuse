@@ -25,6 +25,7 @@ sub run {
     my $cmd_time = time();
     my $ref_timeout = check_var('PUBLIC_CLOUD_PROVIDER', 'AZURE') ? 3600 : 240;
     my $remote = $args->{my_instance}->username . '@' . $args->{my_instance}->public_ip;
+    $self->{remote} = $remote;
     # pkcon not present on SLE-micro
     kill_packagekit($args->{my_instance}) unless (is_sle_micro);
     $args->{my_instance}->ssh_script_retry("sudo zypper -n --gpg-auto-import-keys ref", timeout => $ref_timeout, retry => 6, delay => 60);
@@ -38,13 +39,36 @@ sub run {
     record_info('UNAME', $args->{my_instance}->ssh_script_output(cmd => 'uname -a'));
     $args->{my_instance}->ssh_assert_script_run(cmd => 'rpm -qa > /tmp/rpm-qa.txt');
     $args->{my_instance}->upload_log('/tmp/rpm-qa.txt');
-    $args->{my_instance}->cleanup_cloudinit() if (is_cloudinit_supported);
+    #$args->{my_instance}->cleanup_cloudinit() if (is_cloudinit_supported);
+    $args->{my_instance}->ssh_assert_script_run(qq(echo -e "$testapi::password\\n$testapi::password" | sudo passwd azureuser));
+    $args->{my_instance}->ssh_assert_script_run("sudo passwd -u azureuser");
     $args->{my_instance}->softreboot(timeout => get_var('PUBLIC_CLOUD_REBOOT_TIMEOUT', 600));
 
     if (is_cloudinit_supported) {
         $args->{my_instance}->check_cloudinit();
         permit_root_passwordless($args->{my_instance});
     }
+}
+
+sub debug {
+    my $self = shift;
+    script_run('ssh ' . $self->{remote} . ' sudo chmod 655 /var/log/zypper.log');
+    script_run("scp " . $self->{remote} . ":/var/log/zypper.log /var/tmp/zypper.log");
+    upload_logs('/var/tmp/zypper.log', failok => 1);
+}
+
+sub post_fail_hook {
+    my $self = shift;
+
+    $self->debug();
+    $self->SUPER::post_fail_hook;
+}
+
+sub post_run_hook {
+    my $self = shift;
+
+    $self->debug();
+    $self->SUPER::post_run_hook;
 }
 
 sub test_flags {
