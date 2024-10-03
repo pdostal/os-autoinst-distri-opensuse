@@ -1,6 +1,6 @@
 # SUSE's openQA tests
 #
-# Copyright 2022-2023 SUSE LLC
+# Copyright 2022-2024 SUSE LLC
 # SPDX-License-Identifier: FSFAP
 #
 # Summary: Test the kubectl utility
@@ -22,7 +22,7 @@ sub run {
 
     install_kubectl();
     # Record kubectl version and check if the tool itself is healthy
-    record_info("kubectl", script_output("kubectl version --client --output=json"));
+    record_info("kubectl", script_output("kubectl version --client"));
 
     # Prepare the webserver testdata
     assert_script_run('mkdir -p /srv/www/kubectl');
