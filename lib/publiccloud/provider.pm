@@ -601,7 +601,7 @@ sub terraform_apply {
     # 4) Terraform output
 
     my $output = decode_json(script_output("terraform output -json"));
-    my ($vms, $ips, $resource_id);
+    my ($vms, $ips, $resource_group, $resource_id);
     if (get_var('PUBLIC_CLOUD_SLES4SAP')) {
         foreach my $vm_type ('hana', 'drbd', 'netweaver') {
             push @{$vms}, @{$output->{$vm_type . '_name'}->{value}};
@@ -610,6 +610,7 @@ sub terraform_apply {
     } else {
         $vms = $output->{vm_name}->{value};
         $ips = $output->{public_ip}->{value};
+        $resource_group = $output->{resource_group_name}->{value};
         # ResourceID is only provided in the PUBLIC_CLOUD_AZURE_NFS_TEST
         $resource_id = $output->{resource_id}->{value} if (get_var('PUBLIC_CLOUD_AZURE_NFS_TEST'));
     }
@@ -618,6 +619,7 @@ sub terraform_apply {
     foreach my $i (0 .. $#{$vms}) {
         my $instance = publiccloud::instance->new(
             public_ip => @{$ips}[$i],
+            resource_group => $resource_group,
             resource_id => $resource_id,
             instance_id => @{$vms}[$i],
             username => $self->provider_client->username,
