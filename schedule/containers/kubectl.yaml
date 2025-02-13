@@ -1,0 +1,4 @@
+name: kubectl
+schedule:
+  - boot/boot_to_desktop
+  - containers/kubectl
