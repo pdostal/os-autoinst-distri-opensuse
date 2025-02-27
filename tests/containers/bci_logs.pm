@@ -43,12 +43,30 @@ sub run {
         } else {
             record_info('Parse', $log_file);
             my $dom = XML::LibXML->load_xml(location => "ulogs/$log_file");
-            for my $node ($dom->findnodes('//testsuite')) {
+            for my $ts ($dom->findnodes('//testsuite')) {
                 # Replace default attribute name "pytest" by its env name and engine
                 my $new_name = $env . '_' . $engine;
-                $node->{name} =~ s/pytest/$new_name/;
+                $ts->{name} =~ s/pytest/$new_name/;
+                record_info('TESTSUITE', $ts->{name});
+                my $softfailures = ($ts->{softfailures}) ? $ts->{softfailures} : 0;
+                my $skipped = ($ts->{skipped}) ? $ts->{skipped} : 0;
+                for my $tc ($ts->findnodes('./testcase')) {
+                    record_info('TESTCASE', $tc->{name});
+                    for my $skipped ($tc->findnodes('./skipped')) {
+                        record_info('SKIP', $skipped->{message});
+                        my $message = $skipped->{type} . ': ' . $skipped->{message};
+                        my $softfailure = $dom->createElement('softfailure');
+                        $softfailure->setAttribute('message', $message);
+                        $tc->appendChild($softfailure);
+                        $tc->removeChild($skipped);
+                        $softfailures = $softfailures + 1;
+                        $skipped = $skipped - 1;
+                    }
+                }
+                $ts->{softfailures} = $softfailures;
+                $ts->{skipped} = $skipped;
                 # Append test results to the resulting xml file
-                $root->appendChild($node);
+                $root->appendChild($ts);
             }
         }
     }
