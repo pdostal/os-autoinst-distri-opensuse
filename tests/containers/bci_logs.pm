@@ -17,6 +17,9 @@ use XML::LibXML;
 use testapi;
 use serial_terminal 'select_serial_terminal';
 use File::Basename;
+use Data::Dumper;
+use XML::Dumper;
+my $dump = new XML::Dumper;
 
 sub run {
     select_serial_terminal;
@@ -47,6 +50,15 @@ sub run {
                 # Replace default attribute name "pytest" by its env name and engine
                 my $new_name = $env . '_' . $engine;
                 $node->{name} =~ s/pytest/$new_name/;
+                for my $case ($node->findnodes('//testcase')) {
+                    for my $skipped ($case->findnodes('//skipped')) {
+                        my $message = $skipped->{type} . ': ' . $skipped->{message};
+                        record_soft_failure($message);
+                        my $failure = $dom->createElement('softfail');
+                        $failure->setAttribute('message', $message);
+                        $case->appendChild($failure);
+                    }
+                }
                 # Append test results to the resulting xml file
                 $root->appendChild($node);
             }
