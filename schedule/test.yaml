@@ -1,0 +1,9 @@
+---
+name: test
+description:    >
+    This is a test
+
+schedule:
+    - boot/boot_to_desktop
+    - test_first
+    - test_second
