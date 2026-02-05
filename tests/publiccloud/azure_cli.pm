@@ -29,7 +29,8 @@ sub run {
         # Public Cloud module is not needed since SLE 16 to install azure cli
         add_suseconnect_product(get_addon_fullname('pcm'), (is_sle('=12-sp5') ? '12' : undef)) unless (is_sle('16+'));
         add_suseconnect_product(get_addon_fullname('phub')) if is_sle('=12-sp5');
-        zypper_call('in azure-cli jq python3-susepubliccloudinfo');
+        my $pkgs = (is_sle('=16')) ? 'az-cli-cmd jq' : 'azure-cli jq python3-susepubliccloudinfo';
+        zypper_call("in $pkgs");
     }
     assert_script_run('az version');
 
